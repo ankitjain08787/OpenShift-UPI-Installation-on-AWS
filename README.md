@@ -12,6 +12,7 @@ Setting up a **Red Hat OpenShift cluster** on **AWS** using the **User-Provision
 - **Terraform** (optional) for automation.
 - **Networking setup** (VPC, subnets, security groups).
 - **IAM roles and policies** for OpenShift components.
+- **Route 53** on AWS with Public domain
 
 ### **Installation Steps**
 1. **Prepare AWS Infrastructure**
