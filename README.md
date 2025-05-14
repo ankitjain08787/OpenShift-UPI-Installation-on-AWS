@@ -1,7 +1,7 @@
 # OpenShift-UPI-Installation-on-AWS
 Red Hat OpenShift User-Provisioned-Installation on AWS
 
-[Author: Ankit Jain](https://www.linkedin.com/in/ankitkkjain/)
+[Documentation Author: Ankit Jain](https://www.linkedin.com/in/ankitkkjain/)
 
 Setting up a **Red Hat OpenShift cluster** on **AWS** using the **User-Provisioned Infrastructure (UPI)** method requires manual creation of infrastructure components. Here’s a **brief end-to-end guide**:
 
