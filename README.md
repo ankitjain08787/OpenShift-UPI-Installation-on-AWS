@@ -64,6 +64,28 @@ Setting up a **Red Hat OpenShift cluster** on **AWS** using the **User-Provision
 
 For **detailed documentation**, refer to [Red Hat OpenShift Docs](https://docs.redhat.com/en/documentation/openshift_container_platform/4.15/html/installing_on_aws/installing-aws-user-infra) and [AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/red-hat-openshift-on-aws-implementation/installation-options.html).
 
+## **Installation Steps Completed**
+
+
+# **If Installation Failed then  Check the logs**
+
+[root@ip-172-31-3-148 ~]# openshift-install gather bootstrap --help
+Gather debugging data for a failing-to-bootstrap control plane
+
+Usage:
+  openshift-install gather bootstrap [flags]
+
+Flags:
+      --bootstrap string     Hostname or IP of the bootstrap host
+  -h, --help                 help for bootstrap
+      --key stringArray      Path to SSH private keys that should be used for authentication. If no key was provided, SSH private keys from user's environment will be used
+      --master stringArray   Hostnames or IPs of all control plane hosts
+      --skipAnalysis         Skip analysis of the gathered data
+
+Global Flags:
+      --dir string         assets directory (default ".")
+      --log-level string   log level (e.g. "debug | info | warn | error") (default "info")
+
 
 ===================================
 
