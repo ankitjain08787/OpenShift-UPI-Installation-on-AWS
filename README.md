@@ -44,6 +44,7 @@ Setting up a **Red Hat OpenShift cluster** on **AWS** using the **User-Provision
    openshift-install create ignition-configs
    aws ec2 run-instances --image-id <AMI_ID> --count 1 --instance-type m5.large --key-name <KEY_NAME> --security-group-ids <SG_ID> --subnet-id <SUBNET_ID>
    ```
+[Refer for Image](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/installing_on_aws/user-provisioned-infrastructure#installation-aws-ami-stream-metadata_installing-aws-user-infra)
 
 5. **Deploy Control Plane and Worker Nodes**
    ```sh
