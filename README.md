@@ -343,6 +343,67 @@ Would you like help verifying logs or troubleshooting bootstrap failures?
 
 ##
 
+##
+To inject an Ignition file stored in an **S3 bucket** directly into an AWS EC2 instance during creation, follow these steps:
+
+### **1. Generate and Upload the Ignition File**
+Make sure you have the Ignition configuration file:
+```sh
+openshift-install create ignition-configs --dir=<Directory>
+```
+Then, upload it to an S3 bucket:
+```sh
+aws s3 cp bootstrap.ign s3://<your-bucket-name>/bootstrap.ign --acl private
+```
+Ensure the bucket permissions allow only your EC2 instances to access the file.
+
+### **2. Create an EC2 Instance with Ignition via User Data**
+Use AWS CLI to fetch the Ignition file from S3 and apply it during EC2 instance creation:
+```sh
+aws ec2 run-instances --image-id <AMI-ID> --count 1 \
+--instance-type <Instance-Type> --key-name <Key-Pair> \
+--security-groups <Security-Group> --subnet-id <Subnet-ID> \
+--iam-instance-profile Name=<IAM-Role> \
+--user-data "Content-Type: multipart/mixed; boundary=\"IgnitionBoundary\"
+MIME-Version: 1.0
+
+--IgnitionBoundary
+Content-Type: text/x-shellscript
+Mime-Version: 1.0
+
+#!/bin/bash
+curl -o /var/lib/ignition/bootstrap.ign $(aws s3 presign s3://<your-bucket-name>/bootstrap.ign)
+--IgnitionBoundary--"
+```
+Replace:
+- `<AMI-ID>` with the appropriate **Red Hat CoreOS (RHCOS)** AMI.
+- `<IAM-Role>` with an IAM profile that has **S3 read access**.
+- `<your-bucket-name>` with the name of your S3 bucket.
+
+### **3. Ensure IAM Role Has S3 Access**
+Create an **IAM Role** with the following permissions:
+```json
+{
+    "Effect": "Allow",
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::<your-bucket-name>/*"
+}
+```
+Attach this role to the EC2 instance so it can access the Ignition file.
+
+### **4. Verify Bootstrap Process**
+After instance creation, check if the Ignition file was applied correctly:
+```sh
+journalctl -u ignition --no-pager -n 50
+```
+Also, verify the bootstrap progress:
+```sh
+openshift-install wait-for bootstrap-complete --log-level=debug
+```
+
+This ensures the bootstrap node initializes correctly using the Ignition file from S3.
+##
+
 ## **The End**
 
 
