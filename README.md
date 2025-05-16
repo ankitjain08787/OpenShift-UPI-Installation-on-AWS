@@ -107,6 +107,40 @@ When creating **subnets**, their **CIDR block** must be **within the VPC CIDR bl
 Node: Each subnet must stay within the VPC's address space, and AWS reserves **5 IP addresses** in each subnet: the first IP, last IP, and three others for AWS services.
 ##
 ##
+
+### **Should the Bootstrap Node Use a Different Subnet?**
+**1️⃣ Same Subnet as the Master (`10.0.1.0/24`)**  
+✅ If the bootstrap node is tightly integrated with the master and worker nodes, keeping it in the **same subnet** (`10.0.1.0/24`) can simplify networking.  
+✅ Reduces complexity in routing and security configurations.  
+✅ Easier for direct communication with the master node, reducing latency.  
+
+**2️⃣ Separate Subnet for Bootstrap (e.g., `10.0.5.0/24`)**  
+✅ If you want **network isolation** between the bootstrap and master/workers, a separate subnet can add security.  
+✅ Better control over Security Groups and Network ACLs.  
+✅ Useful if bootstrap runs temporary provisioning processes and doesn’t need long-term persistence.  
+
+### **Best Approach?**
+Most deployments **keep the bootstrap node in the same subnet** as the master (`10.0.1.0/24`) for simplicity.  
+However, if you have a security-first approach or multi-AZ architecture, a separate subnet may be beneficial.  
+
+**Security Rules for Bootstrap Node**
+Since your **master node** is in `10.0.1.0/24`, your bootstrap node will likely be in the same subnet. Here’s how to set up **Security Group rules**:
+
+#### **1️⃣ Inbound Rules (Incoming Traffic)**
+| Protocol | Port | Source | Purpose |
+|----------|------|--------|---------|
+| SSH (Secure Shell) | 22 | Your Admin IP | Only allow your IP for secure access. |
+| Kubernetes API | 6443 | Master Nodes | Enables communication with the master node. |
+| Internal Communication | Custom | Master & Worker Subnets | Any necessary ports for internal cluster setup. |
+
+#### **2️⃣ Outbound Rules (Outgoing Traffic)**
+| Destination | Protocol | Purpose |
+|-------------|----------|---------|
+| Internet Gateway / NAT Gateway | HTTPS (443) | Allows package downloads & updates. |
+| Master Node (`10.0.1.0/24`) | TCP/UDP | Communication for node initialization. |
+##
+##
+
 It looks like your **security group** and **subnet** belong to different **VPCs**, which is causing the error. Here’s how you can troubleshoot and resolve it:
 
 ### **Steps to Fix**
