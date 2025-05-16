@@ -66,8 +66,10 @@ For **detailed documentation**, refer to [Red Hat OpenShift Docs](https://docs.r
 
 ## **Installation Steps Completed**
 
+##
+##
 
-# **If Installation Failed then  Check the logs**
+## **If Installation Failed then  Check the logs**
 
 [root@ip-172-31-3-148 ~]# openshift-install gather bootstrap --help
 Gather debugging data for a failing-to-bootstrap control plane
@@ -86,10 +88,24 @@ Global Flags:
       --dir string         assets directory (default ".")
       --log-level string   log level (e.g. "debug | info | warn | error") (default "info")
 
+##
 
-===================================
+## **IPv4 VPC and Subnet CIDR Blocks**
+In Amazon AWS, when creating a VPC (Virtual Private Cloud), commonly used IPv4 CIDR blocks follow the private address space defined by RFC 1918. Here are the most frequently used options:
 
+**Commonly Used IPv4 VPC CIDR Blocks in AWS:**
+1. **10.0.0.0/16** – Often used because it provides **65,536** available IP addresses.
+2. **192.168.0.0/16** – Common in smaller setups; also allows for **65,536** IP addresses.
+3. **172.16.0.0/16** – Less frequently used but still an option within the **RFC 1918** range.
 
+When creating **subnets**, their **CIDR block** must be **within the VPC CIDR block**. For example, if your **VPC CIDR block** is `10.0.0.0/16`, you might use these **subnet CIDR blocks**:
+- **10.0.1.0/24** (Allows **256** IPs)
+- **10.0.2.0/24** (Allows **256** IPs)
+- **10.0.3.0/24** (Allows **256** IPs)
+
+Node: Each subnet must stay within the VPC's address space, and AWS reserves **5 IP addresses** in each subnet: the first IP, last IP, and three others for AWS services.
+##
+##
 It looks like your **security group** and **subnet** belong to different **VPCs**, which is causing the error. Here’s how you can troubleshoot and resolve it:
 
 ### **Steps to Fix**
