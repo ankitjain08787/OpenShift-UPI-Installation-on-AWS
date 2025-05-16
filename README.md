@@ -242,6 +242,58 @@ spec:
 ✅ Customize instance sizes (`m5.large` for workers, `m5.xlarge` for masters).  
 ✅ Enable **proper IAM roles & policies** for cloud integrations.  
 
+##
+The subnet plays a crucial role in defining which nodes are masters and which are workers in the install-config.yaml file. Here’s how it works:
+
+1. Subnet Differentiation
+Each node (master or worker) is assigned a subnet in AWS.
+
+The subnet determines the network range and accessibility of the node.
+
+OpenShift uses this information to group nodes accordingly.
+
+2. Master vs. Worker Subnet
+Master Nodes are typically placed in a private subnet for security.
+
+Worker Nodes can be in a public or private subnet, depending on workload requirements.
+
+The subnet ID in install-config.yaml helps OpenShift identify and assign roles.
+
+3. Example Configuration
+Here’s how you define subnets in install-config.yaml:
+```
+yaml
+platform:
+  aws:
+    region: us-east-1
+compute:
+- name: worker
+  replicas: 2
+  platform:
+    aws:
+      type: m5.large
+      subnet: subnet-12345678
+controlPlane:
+- name: master
+  replicas: 3
+  platform:
+    aws:
+      type: m5.xlarge
+      subnet: subnet-87654321
+```
+The subnet ID (subnet-12345678 for workers, subnet-87654321 for masters) determines where each node is deployed.
+
+OpenShift automatically assigns roles based on these subnet definitions.
+
+4. Validation
+To verify subnet assignments, use:
+```
+sh
+aws ec2 describe-subnets --query 'Subnets[*].[SubnetId, VpcId, AvailabilityZone]' --output table
+```
+This ensures that the correct subnets are being used for masters and workers.
+##
+
 
 ## **The End**
 
