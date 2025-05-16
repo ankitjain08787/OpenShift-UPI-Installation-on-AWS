@@ -34,14 +34,14 @@ Setting up a **Red Hat OpenShift cluster** on **AWS** using the **User-Provision
 
 3. **Generate Installation Configuration**
    ```sh
-   openshift-install create install-config
+   openshift-install create install-config --dir=<Directory>
    ```
    - Modify `install-config.yaml` to match AWS infrastructure.
 
 4. **Deploy Bootstrap Node**
    ```sh
-   openshift-install create manifests
-   openshift-install create ignition-configs
+   openshift-install create manifests --dir=<Directory>
+   openshift-install create ignition-configs --dir=<Directory>
    aws ec2 run-instances --image-id <AMI_ID> --count 1 --instance-type m5.large --key-name <KEY_NAME> --security-group-ids <SG_ID> --subnet-id <SUBNET_ID>
    ```
 [Refer for Image](https://docs.redhat.com/en/documentation/openshift_container_platform/4.16/html/installing_on_aws/user-provisioned-infrastructure#installation-aws-ami-stream-metadata_installing-aws-user-infra)
@@ -165,6 +165,83 @@ It looks like your **security group** and **subnet** belong to different **VPCs*
    ```sh
    aws ec2 run-instances --image-id ami-0c2fcce436b950ba6 --count 1 --instance-type m5.large --key-name k8snodes --security-group-ids <NEW_SG_ID> --subnet-id subnet-0d656ccfceb0b1715
    ```
+##
+
+Several Modification in YAML files inside the `manifests/` folder after 'openshift-install create install-config' command to adjust **networking**, **machine settings**, and **security policies**.
+
+### **Key Configuration File Modifications**
+Here are the main changes you might need to make:
+
+#### **1️⃣ `install-config.yaml` (Before manifest creation)**
+Before running `openshift-install create manifests`, edit `install-config.yaml`:
+- Set **Cluster Networking**:
+  ```yaml
+  networking:
+    networkType: OpenShiftSDN
+    machineNetwork:
+      - cidr: "10.0.0.0/16"
+    clusterNetwork:
+      - cidr: "10.128.0.0/14"
+        hostPrefix: 23
+    serviceNetwork:
+      - "172.30.0.0/16"
+  ```
+- Define **Machine Types**:
+  ```yaml
+  compute:
+    - name: worker
+      replicas: 3
+      platform:
+        aws:
+          type: "m5.large"
+  ```
+- Adjust **Platform-specific settings** (for AWS, Azure, etc.).
+
+#### **2️⃣ `cluster-scheduler-02-config.yaml`**
+Modify this file if you want **dedicated master nodes** (preventing workload scheduling on masters):
+```yaml
+apiVersion: config.openshift.io/v1
+kind: Scheduler
+metadata:
+  name: cluster
+spec:
+  mastersSchedulable: false
+```
+
+#### **3️⃣ `cloud-provider-config.yaml` (for Cloud integrations)**
+For AWS, configure cloud provider settings:
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloud-provider-config
+  namespace: openshift-config
+data:
+  config: |
+    [Global]
+    Zone = us-east-1a
+```
+
+#### **4️⃣ `machine-config.yaml` (for node settings)**
+Define node configurations:
+```yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: worker-config
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+  osImageURL: "registry.openshift.com/rhcos:latest"
+```
+
+### **Best Practices**
+✅ Ensure **CIDR blocks** match your planned VPC & subnets.  
+✅ Keep master nodes **unschedulable** for workload isolation.  
+✅ Customize instance sizes (`m5.large` for workers, `m5.xlarge` for masters).  
+✅ Enable **proper IAM roles & policies** for cloud integrations.  
+
 
 ## **The End**
 
