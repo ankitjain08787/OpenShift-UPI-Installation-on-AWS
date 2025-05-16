@@ -294,6 +294,54 @@ aws ec2 describe-subnets --query 'Subnets[*].[SubnetId, VpcId, AvailabilityZone]
 This ensures that the correct subnets are being used for masters and workers.
 ##
 
+##
+To specify `bootstrap.ign` in an AWS EC2 instance, follow these steps:
+
+### **1. Prepare Ignition Configuration**
+Ensure you have the `bootstrap.ign` file generated using:
+```sh
+openshift-install create ignition-configs --dir=<Directory>
+```
+This file contains setup instructions for the bootstrap node.
+
+### **2. Upload `bootstrap.ign` to an S3 Bucket (Optional)**
+AWS requires an accessible location for the Ignition config. You can either:
+- Store it in an S3 bucket and use an HTTPS link.
+- Directly provide it as `user_data` during instance launch.
+
+### **3. Launch AWS EC2 Bootstrap Node**
+When creating the bootstrap node, specify `bootstrap.ign` in the **User Data** field. You can do this using the AWS console or CLI.
+
+#### **Using AWS Management Console**
+1. Go to EC2 → Launch Instance.
+2. Select the appropriate AMI (e.g., RHCOS image).
+3. Choose instance type and configure networking.
+4. In **Advanced Details**, locate **User Data** and paste:
+   ```
+   #cloud-config
+   user_data: file://bootstrap.ign
+   ```
+
+#### **Using AWS CLI**
+Run the following command:
+```sh
+aws ec2 run-instances --image-id <AMI-ID> --count 1 \
+--instance-type <Instance-Type> --key-name <Key-Pair> \
+--security-groups <Security-Group> --subnet-id <Subnet-ID> \
+--user-data file://bootstrap.ign
+```
+Replace `<AMI-ID>`, `<Instance-Type>`, and other parameters with actual values.
+
+### **4. Verify Bootstrap Process**
+After instance creation, monitor the bootstrap process using:
+```sh
+openshift-install wait-for bootstrap-complete --log-level=debug
+```
+Once the master nodes stabilize, the bootstrap node shuts down.
+
+Would you like help verifying logs or troubleshooting bootstrap failures?
+
+##
 
 ## **The End**
 
