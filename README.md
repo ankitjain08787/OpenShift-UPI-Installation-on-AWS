@@ -403,7 +403,47 @@ openshift-install wait-for bootstrap-complete --log-level=debug
 
 This ensures the bootstrap node initializes correctly using the Ignition file from S3.
 ##
+##
+It looks like your **user-data script** isn't executing properly when launching an EC2 instance with the `bootstrap.ign` file. Here are a few things to check:
 
+### **Troubleshooting Steps**
+1. **Verify the User-Data Format**  
+   - Ensure your `bootstrap.ign` file is correctly formatted.
+   - Try using a **YAML or JSON format** if required.
+
+2. **Check Cloud-Init Logs**  
+   - SSH into the instance and check logs:
+     ```sh
+     cat /var/log/cloud-init-output.log
+     ```
+   - Look for errors related to user-data execution.
+
+3. **Ensure User-Data is Enabled**  
+   - Some AMIs disable user-data execution after the first boot.
+   - You can manually re-enable it:
+     ```sh
+     sudo cloud-init clean
+     sudo cloud-init init
+     ```
+
+4. **Use Base64 Encoding**  
+   - Some AWS services require user-data to be **Base64 encoded**:
+     ```sh
+     base64 bootstrap.ign
+     ```
+
+5. **Try a Different User-Data Method**  
+   - Instead of `file://bootstrap.ign`, try:
+     ```sh
+     --user-data "$(cat bootstrap.ign)"
+     ```
+
+6. **Check IAM Permissions**  
+   - Ensure your instance has the correct IAM role to execute user-data scripts.
+
+For more details, you can check [this Stack Overflow discussion](https://stackoverflow.com/questions/27086639/user-data-scripts-is-not-running-on-my-custom-ami-but-working-in-standard-amazo) or [AWS documentation](https://docs.aws.amazon.com/ec2/latest/devguide/example_ec2_RunInstances_section.html).
+
+##
 ## **The End**
 
 
